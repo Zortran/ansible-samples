@@ -1,0 +1,17 @@
+---
+
+- name: DELL1950 Install NIC firmware
+  apt: >
+    name=firmware-bnx2
+    state=present
+    update_cache=yes
+
+- name: DELL1950 /etc/network/interfaces
+  template: >
+    src=interfaces.dell1950.j2
+    dest=/etc/network/interfaces
+    owner=root
+    group=root
+    mode="644"
+  when: "'firewalls' not in group_names"
+  #notify: DELL Networking apply

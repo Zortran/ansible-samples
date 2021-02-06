@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+    - name: Check smartctl
+      shell: 'smartctl --scan | grep raid | sed "s/^\(.*\)\ \#.*$/\1/"'
+      register: result
+    - name:
+      debug: msg={{result}}

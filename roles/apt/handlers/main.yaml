@@ -1,0 +1,13 @@
+---
+
+- name: apt-get update
+  apt: update_cache=yes
+
+- name: apt-get upgrade
+  apt: upgrade=dist
+
+- name: update-ca-certificates
+  shell: /usr/sbin/update-ca-certificates
+
+- name: unattended upgrade reconfigure
+  shell: /usr/sbin/dpkg-reconfigure -plow unattended-upgrades -f noninteractive

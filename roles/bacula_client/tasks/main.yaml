@@ -1,0 +1,31 @@
+---
+
+- name: install bacula-fd
+  apt: name=bacula-fd
+
+- name: install openssl if not installed
+  apt: name=openssl
+
+- name: create bacula-fd config
+  template: >
+    src=bacula-fd.conf.j2
+    dest=/etc/bacula/bacula-fd.conf
+    owner=root
+    group=root
+    mode=640
+
+- name: Check that the fd-{{ ansible_nodename }}.pem exists
+  stat: path=/etc/bacula/fd-{{ ansible_nodename }}.pem
+  register: cert_file_result
+
+- name: create self-signed key
+  command: openssl req -new
+             -x509
+             -nodes
+             -subj "/C=RU/ST=Russian Federation/L=Saint-Petersburg/O=Example Group/OU=IT/emailAddress=admin@example.ru"
+             -out /etc/bacula/fd-{{ ansible_nodename }}.pem
+             -keyout /etc/bacula/fd-{{ ansible_nodename }}.pem
+  when: not cert_file_result.stat.exists
+
+- name: copy master cert
+  copy: src=master.cert dest=/etc/bacula/master.cert owner=root group=root mode=440

@@ -1,0 +1,40 @@
+---
+- name: APT disable installing recommend packages
+  copy:
+    src: 02norecommend
+    dest: /etc/apt/apt.conf.d/02norecommend
+    owner: root
+    group: root
+    mode: "644"
+
+- name: APT enable auto clean cache
+  copy:
+    src: 80_autoclean_installed
+    dest: /etc/apt/apt.conf.d/80_autoclean_installed
+    owner: root
+    group: root
+    mode: "644"
+
+- name: APT enable auto upgrade
+  copy:
+    src: 20auto-upgrades
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: "644"
+
+- name: APT set language
+  copy:
+    src: 04language
+    dest: /etc/apt/apt.conf.d/04language
+    owner: root
+    group: root
+    mode: "644"
+
+- name: APT unset install recommend
+  copy:
+    src: 02norecommend
+    dest: /etc/apt/apt.conf.d/02norecommend
+    owner: root
+    group: root
+    mode: "644"

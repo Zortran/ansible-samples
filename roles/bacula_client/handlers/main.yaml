@@ -1,0 +1,12 @@
+---
+
+- name: create self-signed key
+  command: openssl req -new
+             -x509
+             -nodes
+             -subj "/C=RU/ST=Russian Federation/L=Saint-Petersburg/O=Example Group/OU=IT/emailAddress=admin@example.ru"
+             -out /etc/bacula/fd-{{ ansible_nodename }}.pem
+             -keyout /etc/bacula/fd-{{ ansible_nodename }}.pem
+
+- name: restart bacula-fd
+  service: name=bacula-fd state=restarted

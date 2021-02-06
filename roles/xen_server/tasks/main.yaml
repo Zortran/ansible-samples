@@ -1,0 +1,37 @@
+---
+
+- name: install xen packages
+  apt: name="{{ packages }}" state=present update_cache=yes
+  notify: change boot order
+
+- name: change config /etc/default/xendomains
+  lineinfile: >
+    dest=/etc/default/xendomains
+    regexp="^{{ item.name }}="
+    line="{{ item.name }}={{ item.value }}"
+    backup=yes
+  with_items:
+    - { name: 'XENDOMAINS_SAVE', value: '' }
+    - { name: 'XENDOMAINS_RESTORE', value: 'false' }
+
+- name: disable autoballoon
+  lineinfile: >
+    dest=/etc/xen/xl.conf
+    insertafter="#autoballoon"
+    line="autoballoon=0"
+
+- name: change grub
+  lineinfile: >
+    dest=/etc/default/grub
+    regexp="^GRUB_CMDLINE_XEN_DEFAULT"
+    insertafter="^GRUB_CMDLINE_LINUX"
+    line='GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=2048M,max:2048M dom0_max_vcpus=2 dom0_vcpus_pin gnttab_max_frames=256"'
+  notify: update grub config
+
+- name: /etc/xen-tools/xen-tools.conf
+  template: >
+    src=xen-tools.conf.j2
+    dest=/etc/xen-tools/xen-tools.conf
+    owner=root
+    group=root
+    mode="644"

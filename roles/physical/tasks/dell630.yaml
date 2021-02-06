@@ -1,0 +1,11 @@
+---
+
+- name: DELL630 /etc/network/interfaces
+  template: >
+    src=interfaces.dell630.j2
+    dest=/etc/network/interfaces
+    owner=root
+    group=root
+    mode="644"
+  when: "'firewalls' not in group_names"
+  #notify: DELL Networking apply

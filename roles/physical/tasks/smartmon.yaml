@@ -1,0 +1,42 @@
+---
+- name: install smartmontools
+  package:
+    name:
+      - smartmontools
+    state: present
+- name: Check smartctl
+  shell: 'smartctl --scan | grep raid | sed "s/^\(.*\)\ \#.*$/\1/"'
+  register: megaraid_devices
+
+- name: SmartMonD tuning /etc/smartd.conf
+  lineinfile: >
+    path=/etc/smartd.conf
+    regexp='^{{ item }}'
+    line='{{ item }}'
+    create=yes
+    mode="644"
+  with_items: 
+    - "{{ megaraid_devices.stdout_lines }}"
+  when: megaraid_devices.stdout_lines is defined
+
+- name: SmartMonD tuning /etc/smartd.conf
+  lineinfile: >
+    path=/etc/default/smartmontools
+    regexp="^#*{{ item.name }}"
+    line="{{ item.name }}={{ item.value }}"
+    create=yes
+    mode="644"
+  with_items:
+    - { name: 'DEVICESCAN', value: '-d removable -n standby -m root -M exec /usr/share/smartmontools/smartd-runner' }
+    - { name: 'DEFAULT', value: '-m admin@example.ru -a' }
+
+- name: SmartMonD tuning /etc/default/smartmontools
+  lineinfile: >
+    path=/etc/default/smartmontools
+    regexp="^#*{{ item.name }}"
+    line="{{ item.name }}={{ item.value }}"
+    create=yes
+    mode="644"
+  with_items:
+    - { name: 'smartd_opts', value: '"--interval=1800"' }
+    - { name: 'start_smartd', value: 'yes' }

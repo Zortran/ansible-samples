@@ -1,0 +1,31 @@
+{% if ansible_product_name == "PowerEdge 1950" %}
+lvm = main
+{%- elif ansible_product_name == "PowerEdge R630" %}
+lvm = {{ ansible_hostname }}-vm
+{%- else %}
+{%- endif %}
+install-method = debootstrap
+size   = 4G       # Root disk, suffix (G, M, k) required
+memory = 256M     # Suffix (G, M, k) required
+swap   = 512M     # Suffix (G, M, k) required
+fs     = ext4     # Default file system for any disk
+dist   = `xt-guess-suite-and-mirror --suite`
+                  # Default distribution is determined by Dom0's distribution
+image  = sparse   # Specify sparse vs. full disk images (file based images only)
+gateway    = {{ ansible_default_ipv4.gateway }}
+netmask    = {{ ansible_default_ipv4.netmask }}
+{% if ansible_dns.nameservers is defined %}
+nameserver = {{ ansible_dns.nameservers[0] }}
+{% endif %}
+bridge = xenbr0
+hash_method = sha512
+kernel = /boot/vmlinuz-`uname -r`
+initrd = /boot/initrd.img-`uname -r`
+mirror = 'http://repo.zone/debian/'
+ext4_options     = noatime,nodiratime,errors=remount-ro
+ext3_options     = noatime,nodiratime,errors=remount-ro
+ext2_options     = noatime,nodiratime,errors=remount-ro
+xfs_options      = defaults
+reiserfs_options = defaults
+btrfs_options    = defaults
+nohosts = 1

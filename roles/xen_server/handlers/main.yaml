@@ -1,0 +1,7 @@
+---
+
+- name: update grub config
+  command: /usr/sbin/update-grub
+
+- name: change boot order
+  command: /usr/bin/dpkg-divert --divert /etc/grub.d/08_linux_xen --rename /etc/grub.d/20_linux_xen

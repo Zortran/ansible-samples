@@ -1,0 +1,30 @@
+---
+- name: add skel file
+  copy: src={{ item }} dest=/etc/skel/ owner=root group=root mode=644
+  with_fileglob:
+    - skel/.*
+
+- name: create user's account
+  user:
+    name: "{{ item.login }}"
+    comment: "{{ item.full_name }}"
+    uid: "{{ item.uid }}"
+    append: yes
+    groups:
+      - adm
+      - systemd-journal
+      - sudo
+    shell: /bin/bash
+    create_home: yes
+    password: "{{ item.password }}"
+  with_items: "{{ users }}"
+
+- name: copy public ssh key
+  authorized_key: "user={{ item.0.login }} key='{{ lookup('file', item.1) }}'"
+  with_subelements:
+    - "{{ users }}"
+    - authorized
+
+- name: add user mail aliase
+  template: src=aliases.j2 dest=/etc/aliases owner=root group=root mode=644
+  notify: newaliases

@@ -1,0 +1,88 @@
+---
+- name: install base packages
+  apt:
+    name:
+      - bash-completion
+      - sudo
+      - vim
+      - htop
+      - libpam-passwdqc
+      - dnsutils
+      - needrestart
+      - lshw
+      - rsync
+      - sysstat
+      - debian-security-support
+      - etckeeper
+      - man
+      - wget
+      - sysstat
+      - busybox
+    state: present
+
+- name: install backula for non cloud
+  apt:
+    name:
+      - bacula-fd
+    state: present
+  when: not is_cloud|default( false, true)
+
+- include: chrony.yaml
+  tags: chrony
+
+- include: exim.yaml
+  tags: exim
+
+- name: Start service systat, if not started
+  ansible.builtin.service:
+    name: sysstat
+    state: started
+    enabled: yes
+
+- name: systat enable
+  copy:
+    src: sysstat.default
+    dest: /etc/default/sysstat
+    owner: root
+    group: root
+    mode: "644"
+  notify:
+    - restart sysstat
+
+- name: systat cron.d
+  copy:
+    src: sysstat.cron.d
+    dest: /etc/cron.d/sysstat
+    owner: root
+    group: root
+    mode: "644"
+
+- name: cron.allow
+  copy:
+    src: cron.allow
+    dest: /etc/cron.allow
+    owner: root
+    group: root
+    mode: "644"
+
+- name: Check that the /etc/logrotate.d/wtmp exists
+  stat: path=/etc/logrotate.d/wtmp
+  register: wtmpcheck
+
+- name: check logrotate.conf
+  replace:
+    path: /etc/logrotate.conf
+    regexp: '^\/var\/log\/wtmp \{(\n[^}]*)+\}$'
+    replace: ''
+  when: wtmpcheck.stat.exists
+
+- name: Check that the /etc/logrotate.d/btmp exists
+  stat: path=/etc/logrotate.d/btmp
+  register: btmpcheck
+
+- name: check logrotate.conf
+  replace:
+    path: /etc/logrotate.conf
+    regexp: '^\/var\/log\/btmp \{(\n[^}]*)+\}$'
+    replace: ''
+  when: btmpcheck.stat.exists

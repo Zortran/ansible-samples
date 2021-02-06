@@ -1,0 +1,12 @@
+---
+
+- include: dell1950.yaml
+  when: 'ansible_product_name == "PowerEdge 1950"'
+  tags: dell1950
+
+- include: dell630.yaml
+  when: 'ansible_product_name == "PowerEdge R630"'
+  tags: dell630
+
+- include: smartmon.yaml
+  tags: smartmon

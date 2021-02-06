@@ -1,0 +1,4 @@
+---
+
+- name: FIREWALL update grub
+  command: update-grub

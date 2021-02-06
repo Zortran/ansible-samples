@@ -1,0 +1,24 @@
+---
+
+- name: restart sysstat
+  service:
+    name: sysstat
+    state: restarted
+    enabled: true
+
+- name: exim update conf
+  shell: /usr/sbin/update-exim4.conf
+
+- name: exim update template
+  shell: /usr/sbin/update-exim4.conf.template
+
+- name: restart logrotate
+  service:
+    name: logrotate
+    state: restarted
+    enabled: true
+
+- name: restart chrony
+  service:
+    name: chrony
+    state: restarted

@@ -1,0 +1,15 @@
+deb http://repo.zone/debian {{ ansible_distribution_release }} main contrib non-free
+deb http://repo.zone/debian {{ ansible_distribution_release }}-backports main contrib non-free
+deb http://repo.zone/debian-security {{ ansible_distribution_release }}/updates main
+deb http://repo.zone/debian-updates {{ ansible_distribution_release }}-updates main contrib non-free
+#deb http://repo.zone/ossec {{ ansible_distribution_release }} main
+
+deb http://repo.zone/zabbix {{ ansible_distribution_release }} main
+# zabbix 5.0
+deb http://repo.zone/zabbix-debian/5.0/debian {{ ansible_distribution_release }} main
+#deb http://repo.zone/docker {{ ansible_distribution_release }} stable
+
+#deb http://repo.zone/elastic/7.x stable main
+#deb http://repo.zone/elastic-oss/7.x stable main
+#deb http://repo.zone/percona {{ ansible_distribution_release }} main
+#deb http://repo.zone/wazuh/3.x {{ ansible_distribution_release }} main

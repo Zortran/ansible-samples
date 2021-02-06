@@ -1,0 +1,129 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# Managment
+auto eno1
+iface eno1 inet static
+  address {{ ansible_default_ipv4.address }}
+  netmask {{ ansible_default_ipv4.netmask }}
+  gateway {{ ansible_default_ipv4.gateway }}
+  dns-nameservers {% for dns in ansible_dns.nameservers %}{{ dns }}{{ " " if not loop.last else "" }}
+  {% endfor -%}
+  dns-search ps
+{% if "xenservers" in group_names %}
+# VM BOND
+allow-hotplug eno2
+iface eno2 inet manual
+
+allow-hotplug enp129s0f1
+iface enp129s0f1 inet manual
+
+auto bond0
+iface bond0 inet manual
+  bond-slaves eno2 enp129s0f1
+  bond-mode 802.3ad
+  bond-lacp-rate fast
+  bond_xmit_hash_policy layer2+3
+  bond-miimon 100
+  #bond-downdelay 200
+  #bond-updelay 200
+
+# XEN bridge
+auto xenbr0
+iface xenbr0 inet manual
+         bridge_ports bond0
+         bridge_stp off
+
+
+#auto bond0.1131
+#iface bond0.1131 inet manual
+## LB
+#auto bond0.1134
+#iface bond0.1134 inet manual
+#auto bond0.1136
+#iface bond0.1136 inet manual
+#auto bond0.1137
+#iface bond0.1137 inet manual
+#auto bond0.1141
+#iface bond0.1141 inet manual
+#auto bond0.1142
+#iface bond0.1142 inet manual
+#auto bond0.1143
+#iface bond0.1143 inet manual
+#auto bond0.1144
+#iface bond0.1144 inet manual
+#auto bond0.1150
+#iface bond0.1150 inet manual
+#auto bond0.1151
+#iface bond0.1151 inet manual
+#auto bond0.1321
+#iface bond0.1321 inet manual
+#auto bond0.1442
+#iface bond0.1442 inet manual
+#auto bond0.1474
+#iface bond0.1474 inet manual
+#auto bond0.1481
+#iface bond0.1481 inet manual
+#auto xenbr0.1131
+#iface xenbr0.1131 inet manual
+#         bridge_ports bond0.1131
+#         bridge_stp off
+#auto xenbr0.1134
+#iface xenbr0.1134 inet manual
+#         bridge_ports bond0.1134
+#         bridge_stp off
+#auto xenbr0.1136
+#iface xenbr0.1136 inet manual
+#         bridge_ports bond0.1136
+#         bridge_stp off
+#auto xenbr0.1137
+#iface xenbr0.1137 inet manual
+#         bridge_ports bond0.1137
+#         bridge_stp off
+#auto xenbr0.1141
+#iface xenbr0.1141 inet manual
+#         bridge_ports bond0.1141
+#         bridge_stp off
+#auto xenbr0.1142
+#iface xenbr0.1142 inet manual
+#         bridge_ports bond0.1142
+#         bridge_stp off
+#auto xenbr0.1143
+#iface xenbr0.1143 inet manual
+#         bridge_ports bond0.1143
+#         bridge_stp off
+#auto xenbr0.1144
+#iface xenbr0.1144 inet manual
+#         bridge_ports bond0.1144
+#         bridge_stp off
+#auto xenbr0.1150
+#iface xenbr0.1150 inet manual
+#         bridge_ports bond0.1150
+#         bridge_stp off
+#auto xenbr0.1151
+#iface xenbr0.1151 inet manual
+#         bridge_ports bond0.1151
+#         bridge_stp off
+#auto xenbr0.1321
+#iface xenbr0.1321 inet manual
+#         bridge_ports bond0.1321
+#         bridge_stp off
+#auto xenbr0.1442
+#iface xenbr0.1442 inet manual
+#         bridge_ports bond0.1442
+#         bridge_stp off
+#auto xenbr0.1474
+#iface xenbr0.1474 inet manual
+#         bridge_ports bond0.1474
+#         bridge_stp off
+#auto xenbr0.1481
+#iface xenbr0.1481 inet manual
+#         bridge_ports bond0.1481
+#         bridge_stp off
+{% endif %}

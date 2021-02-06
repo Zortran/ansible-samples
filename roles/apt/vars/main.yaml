@@ -1,0 +1,9 @@
+---
+
+apt_key_url:
+    - http://repo.zone/docker.pub
+    - http://repo.zone/elastic.key
+    - http://repo.zone/ossec.pub
+    - http://repo.zone/percona.pub
+    - http://repo.zone/wazuh.pub
+    - http://repo.zone/zabbix.key

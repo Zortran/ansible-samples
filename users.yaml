@@ -1,0 +1,5 @@
+---
+- import_playbook: add_ansiblegroups.yaml
+- hosts: linux
+  roles:
+    - users

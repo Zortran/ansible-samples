@@ -1,0 +1,30 @@
+---
+- import_playbook: add_ansiblegroups.yaml
+- name: Configure physical
+  hosts: physical
+  gather_facts: no
+  roles:
+    - physical
+- name: Configure xen
+  hosts: xenservers
+  gather_facts: no
+  roles:
+    - xen_server
+- name: Configure firewalls
+  hosts: firewalls
+  gather_facts: no
+  roles:
+    - firewalls
+- name: Configure linux
+  hosts: linux
+  gather_facts: no
+  roles:
+    - linux
+- name: Configure debian
+  hosts: debian
+  gather_facts: no
+  roles:
+    - apt
+    - debian
+    - zabbix_agent
+    - bacula_client

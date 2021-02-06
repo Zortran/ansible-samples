@@ -1,0 +1,37 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+allow-hotplug eth1
+iface eth1 inet static
+        address 10.60.12.249
+        netmask 255.255.255.0
+        gateway 10.60.12.1
+        dns-nameservers 10.60.12.1
+        dns-search ps
+allow-hotplug eth0 
+	iface eth0 inet manual
+allow-hotplug eth2 
+	iface eth2 inet manual
+auto eth0.1150
+	iface eth0.1150 inet static
+	address 10.10.150.6
+	netmask 255.255.255.0
+	vlan_raw_device eth0
+auto eth0.5
+	iface eth0.5 inet static
+	address 80.64.103.50 
+	netmask 255.255.255.240
+	vlan_raw_device eth0
+auto eth2.6
+	iface eth2.6 inet static
+	address 80.64.101.183 
+	netmask 255.255.255.252
+	gateway 80.64.101.182
+	vlan_raw_device eth2

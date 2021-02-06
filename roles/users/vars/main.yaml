@@ -1,0 +1,24 @@
+---
+
+users:
+  - login: user1
+    full_name: User Surename
+    uid: 8522
+    password: '---HASH----'
+    authorized:
+      - user1.pub
+    email: user1@example.ru
+
+password_policy:
+  - name: PASS_MAX_DAYS
+    value: 360
+  - name: PASS_MIN_DAYS
+    value: 0
+  - name: LOGIN_RETRIES
+    value: 6
+  - name: LOGIN_TIMEOUT
+    value: 1800
+  - name: LOG_UNKFAIL_ENAB
+    value: 'yes'
+  - name: UMASK
+    value: '077'

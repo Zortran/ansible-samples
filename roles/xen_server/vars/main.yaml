@@ -1,0 +1,9 @@
+---
+ver: "4.11"
+packages:
+  - xen-hypervisor-{{ ver }}-amd64
+  - xen-utils-{{ ver }}
+  - xen-system-amd64
+  - xen-tools
+  - bridge-utils
+  - grub-xen-host

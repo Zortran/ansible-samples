@@ -1,0 +1,4 @@
+---
+
+- name: DELL Networking apply
+  shell: '/etc/init.d/networking restart && ifup -a'

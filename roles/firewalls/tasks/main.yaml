@@ -1,0 +1,17 @@
+---
+
+- name: FIREWALL /etc/network/interfaces
+  copy:
+    src: interfaces.{{ ansible_hostname }}
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: "0644"
+- name: FIREWALL /etc/default/grub
+  copy:
+    src: grub.{{ ansible_hostname }}
+    dest: /etc/default/grub
+    owner: root
+    group: root
+    mode: "0644"
+  notify: FIREWALL update grub

@@ -1,0 +1,29 @@
+---
+- name: install chrony
+  apt:
+    name:
+      - chrony
+
+- name: remove server pools
+  lineinfile: >
+    path=/etc/chrony/chrony.conf
+    regexp='^pool'
+    state=absent
+    mode="644"
+  notify: restart chrony
+
+- name: add ntp3.zone
+  lineinfile: >
+    path=/etc/chrony/chrony.conf
+    line='server ntp3.zone iburst'
+    create=yes
+    mode="644"
+  notify: restart chrony
+
+- name: add ntp4.zone
+  lineinfile: >
+    path=/etc/chrony/chrony.conf
+    line='server ntp4.zone iburst'
+    create=yes
+    mode="644"
+  notify: restart chrony

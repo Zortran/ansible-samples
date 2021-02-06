@@ -1,0 +1,10 @@
+---
+- import_playbook: add_ansiblegroups.yaml
+- name: Configure Debian OS
+  hosts: debian
+  roles:
+    - linux
+    - apt
+    - debian
+    - zabbix_agent
+    - bacula_client

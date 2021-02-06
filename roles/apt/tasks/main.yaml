@@ -1,0 +1,59 @@
+---
+- name: install ca-certificates and apt-https
+  apt:
+    name:
+      - ca-certificates
+      - apt-transport-https
+      - unattended-upgrades
+      - apt-listchanges
+      - gnupg
+    state: present
+
+- name: add trusted CA certificate
+  get_url:
+    url: https://www.exaple.ru/cert-ca.crt
+    dest: /usr/local/share/ca-certificates/cert_CA.crt
+    owner: root
+    group: root
+    mode: "644"
+  notify:
+    - update-ca-certificates
+
+- include: configs.yaml
+  tags: configs
+
+- name: apt-key add
+  apt_key:
+    url: "{{ item }}"
+  with_items: "{{ apt_key_url }}"
+  register: apt_key_result
+
+- name: config_repository
+  template: >
+    src=sources.list.debian.j2
+    dest=/etc/apt/sources.list
+    owner=root
+    group=root
+    mode="644"
+  # when: ansible_lsb['id'] == "Debian"
+  notify:
+    - apt-get update
+    - apt-get upgrade
+
+- name: cron unatteded upgrades
+  copy:
+    src: unattended-upgrade
+    dest: /etc/cron.d/unattended-upgrade
+    owner: root
+    group: root
+    mode: "644"
+  notify:
+    - unattended upgrade reconfigure
+
+- name: cron unatteded upgrades logrotate
+  copy:
+    src: unattended-upgrades.logrotate
+    dest: /etc/logrotate.d/unattended-upgrades
+    owner: root
+    group: root
+    mode: "644"
