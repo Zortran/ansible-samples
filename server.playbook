@@ -1,5 +1,5 @@
 ---
-- import_playbook: add_ansiblegroups.yaml
+- import_playbook: add_ansiblegroups.playbook
 - name: Configure physical
   hosts: physical
   gather_facts: no

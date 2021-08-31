@@ -1,0 +1,19 @@
+stages:
+  - lint
+  - tests
+
+ansible-lint:
+  stage: lint
+  image: gitlab.local:5000/adm/ansible-adm/ansible-lint ## образ во внутреннем гитлабе
+  script:
+    - ansible-lint .
+    - find . -type f -name '*.sh' | xargs -ri shellcheck {}
+    # check EC serts
+    - grep --include=\*.{crt,pem,key} -rl "EC PRIVATE" .| xargs -ri sh -c "echo ===={}====; cat {} |openssl ec -noout -check"
+    # check all certs 
+    - grep --include=\*.{crt,pem,cer} -rl "BEGIN CERTIFICATE" .| xargs -ri sh -c "echo ===={}====;cat {} |openssl x509 -noout -subject -dates -alias -ext subjectAltName,extendedKeyUsage -checkend 604800 || (echo '---- CERT ENDING LESS THEN 1 WEEK----'; false)"
+  tags:
+    - docker
+
+#include:
+#  - local: "roles/repo/.gitlab-ci.yml"

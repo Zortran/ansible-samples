@@ -1,0 +1,68 @@
+---
+# ansible-playbook exclude_front.playbook -e '{fronts: [dc2fe10, dc1fe10]}' #исключение фронтов
+# ansible-playbook exclude_front.playbook -e '{fronts: [dc2fe10, dc1fe10], cheking: true}' #применять для хоста localhost
+# ansible-playbook exclude_front.playbook -e '{fronts: [dc2fe10, dc1fe10], include: true}' #включение
+- name: Exclude FB
+  hosts: "{{ 'localhost' if checking else 'dc*lb*' }}"
+  
+  vars:
+    include: false
+    checking: false
+    fronts: []
+    loop_array:
+      - hosts: "{{ fronts|select('match','^dc2fe') }}"
+        balancers: 'dc2lb*'
+        path: /etc/nginx/upstream-b5.conf
+      - hosts: "{{ fronts|select('match','^dc[15]fe') }}"
+        balancers: "dc[15]lb*"
+        path: /etc/nginx/upstream-a5.conf
+      - hosts: "{{ fronts|select('match','^dc[0-9]ac') }}"
+        balancers: "dc[0-9]lb*"
+        path: /etc/nginx/upstream-account.conf
+      - hosts: "{{ fronts|select('match','^dc2rb') }}"
+        balancers: "dc2lb*"
+        path: /etc/nginx/upstream-simon.conf
+      - hosts: "{{ fronts|select('match','^dc6demo-fe') }}"
+        balancers: "dc6demo-lb*"
+        path: /etc/nginx/upstream-demo.conf
+  
+  handlers:
+    - name: reload nginx
+      command: "/usr/sbin/nginx -t -c /etc/nginx/nginx.conf"
+      register: result
+      changed_when: "result.rc != 0"
+      check_mode: no
+      notify:
+        - reload nginx - after config check
+    - name: reload nginx - after config check
+      service: 
+        name: nginx
+        state: reloaded
+  tasks:
+    - name: DEBUG
+      when: checking
+      debug:
+        msg:
+          - "{{ fronts }}"
+          - "{{ fronts|select('match','^dc2') }}"
+          - "{{ fronts|reject('match','^dc2') }}"
+    - name: Exclude/Include Block
+      notify: reload nginx
+      block:
+        - name: Exclude FRONTS
+          replace:
+            path: "{{ item.0.path }}"
+            regexp: '^(\s*server[^0-9]*[.0-9]*)(((?!down).)*{{ item.1 }}.*)$'
+            replace: '\1 down; #\2'
+          when: inventory_hostname is match( item.0.balancers ) and not include
+          ## приеняем цикл к массиву loop_array, разворачивая дополнительный цикл для подэлементов в hosts
+          ## https://habr.com/ru/post/526526/
+          ## https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#id29
+          loop: "{{ loop_array|subelements('hosts') }}"
+        - name: Include FRONTS
+          replace:
+            path: "{{ item.0.path }}"
+            regexp: '^(\s*server[^0-9]*[.0-9]*) down; #(.*{{ item.1 }}.*)$'
+            replace: '\1\2'
+          when: inventory_hostname is match( item.0.balancers ) and include
+          loop: "{{ loop_array|subelements('hosts') }}"

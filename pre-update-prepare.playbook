@@ -1,0 +1,67 @@
+---
+# USAGE: ansible-playbook pre-update-prepare.playbook -e 'targets="dc0vt*,dc0alarm00"'
+# If host XEN - will add all VMs from it
+- name: Check xen
+  hosts: "{{ targets|default('none', true) }}"
+  gather_facts: no
+  serial: 1
+  tasks:
+    - name: Add all target hosts to group for_play
+      add_host: 
+        name: "{{ item }}"
+        groups:
+          - for_play
+      run_once: true
+      loop: "{{ ansible_play_hosts }}"
+    - name: Gather VMS
+      command: sh -c "xl list | grep -oE 'dc[0-9]\w+[0-9]+'"
+      register: facts
+      check_mode: no
+      when: inventory_hostname is match("dc[0-9]vt[0-9][0-9]|dc[0-9]xen[0-9][0-9]")
+    - name: Add finded VMs to group for_play
+      add_host: 
+        name: "{{ item }}"
+        groups:
+          - for_play
+      loop: "{{ facts.stdout.split() }}"
+      when: inventory_hostname is match("dc[0-9]vt[0-9][0-9]|dc[0-9]xen[0-9][0-9]")
+
+- name: New host-list apt hold ps-
+  hosts: for_play
+  gather_facts: no
+  tasks:
+    - name: Hold all ps-* pkgs
+      raw: apt --version > /dev/null && dpkg -l|grep -E " ps-|tomcat|openjdk|logstash"|awk "{ print \$2 }"|xargs -I {} -rn1 apt-mark hold {} || echo NO APT
+      register: apt_mark
+    - name: Show apt-mark stdout
+      debug:
+        msg: "{{ apt_mark.stdout }}"
+      when: not ansible_check_mode
+- name: New host-list debug
+  hosts: for_play
+  gather_facts: no
+  serial: "{% if groups['for_play']|map('regex_search','^dc2.*')|select('ne', None)|count >0 -%}
+           1 {%- else -%}
+           0 {%- endif %}"
+  vars:
+    b2_apt_limit: 3000
+  tasks:
+    - name: Download updates
+      raw: apt --version > /dev/null && apt -q=1 update && apt upgrade -q=1 -yV --download-only {% if inventory_hostname.startswith("dc2") %} -o Acquire::http::Dl-Limit={{ b2_apt_limit }}{% endif %} || yum update -yd1 --downloadonly
+      register: apt_download
+    - name: Show apt-get download stdout
+      debug:
+        msg: "{{ apt_download.stdout }}"
+      when: not ansible_check_mode
+- name: New host-list apt hold get systemctl failed
+  hosts: for_play
+  gather_facts: no
+  tasks:
+    - name: Get FAILED services
+      shell: 
+        cmd: systemctl --failed
+      register: failed_services
+    - name: Show systemctl --failed stdout
+      debug:
+        msg: "{{ failed_services.stdout }}"
+      when: not ansible_check_mode

@@ -1,0 +1,45 @@
+---
+- name: Group hosts with DONE status
+  gather_facts: yes
+  hosts: all
+  tasks:
+    - name: GROUP available
+      group_by:
+        key: done
+- name: Group hosts by kernel, os_family and distrib
+  gather_facts: no
+  strategy: free
+  hosts: done
+  tasks:
+    - name: GROUP by ITEMS
+      group_by:
+        key: "{{ item }}"
+      with_items:
+        - "{{ ansible_system|lower }}"
+        - "{{ ansible_pkg_mgr|lower }}"
+    - name: GROUP by ITEM and PARENTS
+      group_by:
+        key: "{{ item.key }}"
+        parents: "{{ item.parents }}"
+      with_items:
+        - { key: "{{ ansible_os_family|lower }}", parents: "{{ ansible_system|lower }}"}
+        - { key: "{{ ansible_distribution|lower }}{{ ansible_distribution_major_version|default(omit) }}", parents: "{{ ansible_os_family|lower }}"}
+    - name: GROUP if XEN
+      group_by:
+        key: "xenservers"
+      when: ansible_nodename is match("dc[0-9]vt[0-9][0-9]|dc[0-9]xen[0-9][0-9]")
+    - name: GROUP if firewall
+      group_by:
+        key: "firewalls"
+      when: ansible_nodename is match("dc[0-9]fw[0-9][0-9]")
+    - name: GROUP is physical
+      group_by:
+        key: "physical"
+      #when: not ((ansible_product_name|default( false , true ) in ["NA", "HVM domU"] ) or ( ansible_nodename in groups["cloud"] ))
+      when: ansible_virtualization_role != "guest"
+
+- gather_facts: no
+  hosts: done
+  tasks:
+    - name: DEBUG dynamic groups
+      debug: msg="{{ ansible_nodename }} {{ group_names|sort|to_yaml }}"
