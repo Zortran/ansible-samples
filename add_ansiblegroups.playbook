@@ -27,11 +27,11 @@
     - name: GROUP if XEN
       group_by:
         key: "xenservers"
-      when: ansible_nodename is match("dc[0-9]vt[0-9][0-9]|dc[0-9]xen[0-9][0-9]")
+      when: ansible_nodename is match("c[0-9]virt[0-9][0-9]|c[0-9]xen[0-9][0-9]")
     - name: GROUP if firewall
       group_by:
         key: "firewalls"
-      when: ansible_nodename is match("dc[0-9]fw[0-9][0-9]")
+      when: ansible_nodename is match("c[0-9]fw[0-9][0-9]")
     - name: GROUP is physical
       group_by:
         key: "physical"

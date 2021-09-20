@@ -1,29 +1,20 @@
 ---
-# ansible-playbook exclude_front.playbook -e '{fronts: [dc2fe10, dc1fe10]}' #исключение фронтов
-# ansible-playbook exclude_front.playbook -e '{fronts: [dc2fe10, dc1fe10], cheking: true}' #применять для хоста localhost
-# ansible-playbook exclude_front.playbook -e '{fronts: [dc2fe10, dc1fe10], include: true}' #включение
+# ansible-playbook exclude_front.playbook -e '{fronts: [c2front10, c1front10]}' #исключение фронтов
+# ansible-playbook exclude_front.playbook -e '{fronts: [c2front10, c1front10], checking: true}' #применять для хоста localhost
+# ansible-playbook exclude_front.playbook -e '{fronts: [c2front10, c1front10], include: true}' #включение
 - name: Exclude FB
-  hosts: "{{ 'localhost' if checking else 'dc*lb*' }}"
+  hosts: "{{ 'localhost' if checking else 'c[0-9]balancer*' }}"
   
   vars:
     include: false
     checking: false
     fronts: []
     loop_array:
-      - hosts: "{{ fronts|select('match','^dc2fe') }}"
-        balancers: 'dc2lb*'
-        path: /etc/nginx/upstream-b5.conf
-      - hosts: "{{ fronts|select('match','^dc[15]fe') }}"
-        balancers: "dc[15]lb*"
-        path: /etc/nginx/upstream-a5.conf
-      - hosts: "{{ fronts|select('match','^dc[0-9]ac') }}"
-        balancers: "dc[0-9]lb*"
-        path: /etc/nginx/upstream-account.conf
-      - hosts: "{{ fronts|select('match','^dc2rb') }}"
-        balancers: "dc2lb*"
-        path: /etc/nginx/upstream-simon.conf
-      - hosts: "{{ fronts|select('match','^dc6demo-fe') }}"
-        balancers: "dc6demo-lb*"
+      - hosts: "{{ fronts|select('match','^c[15]front') }}"
+        balancers: "c[15]balancer*"
+        path: /etc/nginx/upstream-main.conf
+      - hosts: "{{ fronts|select('match','^c6demo-front') }}"
+        balancers: "dc6demo-balancer*"
         path: /etc/nginx/upstream-demo.conf
   
   handlers:
@@ -39,13 +30,6 @@
         name: nginx
         state: reloaded
   tasks:
-    - name: DEBUG
-      when: checking
-      debug:
-        msg:
-          - "{{ fronts }}"
-          - "{{ fronts|select('match','^dc2') }}"
-          - "{{ fronts|reject('match','^dc2') }}"
     - name: Exclude/Include Block
       notify: reload nginx
       block:

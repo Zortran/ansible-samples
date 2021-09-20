@@ -1,0 +1,10 @@
+---
+# This playbook runs any role defined as parameter
+# example:
+#   ansible-playbook -i serv1.zone, role-runner.yml -e "role=jenkins_sshdeploy_host" -KC --diff
+
+- name: Any role runner
+  hosts: all
+  roles:
+    - role: "{{ role }}"
+  serial: 1
