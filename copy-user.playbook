@@ -1,0 +1,52 @@
+---
+# Copy single user between hosts
+# ansible-playbook copy-users.playbook -e 'src_srv=serv1' -e 'single_user=user123' -e 'dest_srv="serv2,serv3"'
+- name: User copier
+  hosts: "{{ dest_srv|default('None', true) }}"
+  gather_facts: false
+  vars:
+    src_srv: serv1
+    single_user: user123
+  tasks:
+    - name: check user
+      user:
+        name: "{{ single_user }}"
+        state: present
+      check_mode: true
+      delegate_to: "{{ src_srv }}"
+      register: user_present
+      run_once: true
+    - name: get hash
+      raw: "awk -F: '/{{ single_user }}/{print $2}' /etc/shadow"
+      delegate_to: "{{ src_srv }}"
+      check_mode: no
+      register: user_hash
+      run_once: true
+      when: not user_present.changed
+    - name: get keys
+      raw: "cat /home/{{ single_user }}/.ssh/authorized_keys"
+      delegate_to: "{{ src_srv }}"
+      register: user_keys
+      check_mode: no
+      run_once: true
+      when: not user_present.changed
+    - name: block if user exists
+      when: not user_present.changed
+      block:
+        - name: create user
+          user:
+              name: "{{ single_user }}"
+              comment: "{{ user_present.comment }}"
+              uid: "{{ user_present.uid }}"
+              append: yes
+              groups: "{{ item.groups|default(['adm','systemd-journal','sudo'],true) }}"
+              shell: /bin/bash
+              create_home: yes
+              update_password: on_create
+              password: "{{ user_hash.stdout|trim }}"
+        - name: add keys
+          loop: "{{ user_keys.stdout_lines|reject('match','^$') }}"
+          ansible.posix.authorized_key:
+              user: "{{ single_user }}"
+              state: present
+              key: "{{ item }}"
